@@ -1,0 +1,18 @@
+[
+  {
+    "nome": "Palla di Fuoco",
+    "livello": 3,
+    "scuola": "Invocazione",
+    "rituale": false,
+    "tempo_di_lancio": "1 azione",
+    "gittata": "45 metri",
+    "componenti": "V, S, M (una minuscola sfera di guano di pipistrello e zolfo)",
+    "durata": "Istantanea",
+    "descrizione": "Un lampo luminoso parte dal tuo dito verso un punto a tua scelta entro gittata ed esplode in un'esplosione di fiamme. Ogni creatura in una sfera del raggio di 6 metri centrata su quel punto deve effettuare un **tiro salvezza su Destrezza**. Un bersaglio subisce **8d6 danni da fuoco** se fallisce il tiro salvezza, o la metà se lo supera.",
+    "ai_livelli_superiori": "Quando lanci questo incantesimo usando uno slot di 4° livello o superiore, i danni aumentano di 1d6 per ogni livello di slot superiore al 3°.",
+    "immagine": "https://picsum.photos/seed/fireball/800/400",
+    "posizione_immagine": "center",
+    "classi": "Stregone, Mago",
+    "copie": 1
+  }
+]

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arcane Cards</title>
+  <meta name="description" content="Printable D&D 5e spell cards with custom artwork, 9 per A4 page.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='14' y='6' width='36' height='52' rx='4' fill='%23b4261f'/%3E%3Ccircle cx='32' cy='28' r='9' fill='%23f6e7c1'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Arcane Cards</h1>
+    <p data-i18n="subtitle"></p>
+  </header>
+
+  <main class="layout">
+    <section class="controls">
+      <div class="panel" id="drop">
+        <h2 data-i18n="step1"></h2>
+        <div class="row">
+          <label class="button primary file-button">
+            <input type="file" id="file" accept=".json,.csv,application/json,text/csv">
+            <span data-i18n="upload"></span>
+          </label>
+          <button type="button" class="button" id="load-example" data-i18n="loadExample"></button>
+          <button type="button" class="button ghost" id="clear" data-i18n="clear"></button>
+        </div>
+        <label class="field-label" for="data" data-i18n="pasteLabel"></label>
+        <textarea id="data" spellcheck="false" rows="10"></textarea>
+
+        <div class="templates">
+          <span data-i18n="templates"></span>
+          <a href="templates/spells-template-en.json" download>EN · JSON</a>
+          <a href="templates/spells-template-en.csv" download>EN · CSV</a>
+          <a href="templates/spells-template-it.json" download>IT · JSON</a>
+          <a href="templates/spells-template-it.csv" download>IT · CSV</a>
+          <a href="templates/spells-template-bilingual.json" download>EN+IT · JSON</a>
+        </div>
+
+        <div id="deck-wrap" hidden>
+          <label class="field-label" for="deck" data-i18n="repoDecks"></label>
+          <select id="deck">
+            <option value="" data-i18n="chooseDeck"></option>
+          </select>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="step2"></h2>
+        <p class="help" data-i18n="imagesHelp"></p>
+        <label class="field-label" for="images" data-i18n="localImages"></label>
+        <input type="file" id="images" accept="image/*,.zip,application/zip" multiple>
+        <div class="row images-row">
+          <p class="help" id="images-info"></p>
+          <button type="button" class="button ghost" id="clear-images" hidden data-i18n="clearImages"></button>
+        </div>
+        <p class="help privacy" data-i18n="imagesPrivacy"></p>
+      </div>
+
+      <div class="panel">
+        <h2 data-i18n="step3"></h2>
+        <label class="check lang"><input type="checkbox" id="opt-it"> <span data-i18n="italian"></span></label>
+        <label class="check"><input type="checkbox" id="opt-bw"> <span data-i18n="blackWhite"></span></label>
+        <label class="check"><input type="checkbox" id="opt-crop" checked> <span data-i18n="cropMarks"></span></label>
+        <label class="check"><input type="checkbox" id="opt-gap"> <span data-i18n="gap"></span></label>
+        <label class="check"><input type="checkbox" id="opt-ink"> <span data-i18n="inkSaver"></span></label>
+        <label class="check"><input type="checkbox" id="opt-proxy" checked> <span data-i18n="proxy"></span></label>
+      </div>
+
+      <div class="panel" id="labels-panel">
+        <h2 data-i18n="step4"></h2>
+        <label class="check"><input type="checkbox" id="opt-custom"> <span data-i18n="useCustom"></span></label>
+        <div id="custom-body" hidden>
+          <p class="help" data-i18n="labelsHelp"></p>
+          <textarea id="labels" spellcheck="false" rows="18"></textarea>
+          <div class="row editor-actions">
+            <button type="button" class="button ghost" id="reset-labels" data-i18n="resetDefaults"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="button primary big" id="generate" data-i18n="generate"></button>
+        <a class="button big" id="download" hidden data-i18n="download"></a>
+      </div>
+      <p class="status" id="status" role="status"></p>
+      <div class="warnings" id="warnings" hidden></div>
+
+      <details class="panel fields">
+        <summary data-i18n="fieldsRef"></summary>
+        <p class="help" data-i18n="fieldsIntro"></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="colField"></th><th data-i18n="colItalian"></th><th data-i18n="colDesc"></th></tr></thead>
+            <tbody id="fields-body"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="preview-pane">
+      <h2 data-i18n="preview"></h2>
+      <div class="preview-box">
+        <p id="preview-empty" data-i18n="previewEmpty"></p>
+        <iframe id="preview" title="PDF preview" hidden></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bottom">
+    <p data-i18n="footer"></p>
+  </footer>
+</body>
+</html>

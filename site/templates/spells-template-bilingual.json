@@ -1,0 +1,25 @@
+[
+  {
+    "name_en": "Fireball",
+    "name_it": "Palla di Fuoco",
+    "level": 3,
+    "school": "Evocation",
+    "ritual": false,
+    "casting_time_en": "1 action",
+    "casting_time_it": "1 azione",
+    "range_en": "150 feet",
+    "range_it": "45 metri",
+    "components_en": "V, S, M (a tiny ball of bat guano and sulfur)",
+    "components_it": "V, S, M (una minuscola sfera di guano di pipistrello e zolfo)",
+    "duration_en": "Instantaneous",
+    "duration_it": "Istantanea",
+    "description_en": "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a **Dexterity saving throw**. A target takes **8d6 fire damage** on a failed save, or half as much on a successful one.",
+    "description_it": "Un lampo luminoso parte dal tuo dito verso un punto a tua scelta entro gittata ed esplode in un'esplosione di fiamme. Ogni creatura in una sfera del raggio di 6 metri centrata su quel punto deve effettuare un **tiro salvezza su Destrezza**. Un bersaglio subisce **8d6 danni da fuoco** se fallisce il tiro salvezza, o la metà se lo supera.",
+    "higher_levels_en": "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.",
+    "higher_levels_it": "Quando lanci questo incantesimo usando uno slot di 4° livello o superiore, i danni aumentano di 1d6 per ogni livello di slot superiore al 3°.",
+    "image": "https://picsum.photos/seed/fireball/800/400",
+    "classes_en": "Sorcerer, Wizard",
+    "classes_it": "Stregone, Mago",
+    "copies": 1
+  }
+]
