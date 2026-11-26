@@ -167,3 +167,4 @@ code { font-size: 0.82rem; }
 .images-row { align-items: center; justify-content: space-between; margin: 4px 0 0; }
 .images-row .help { margin: 0; }
 .help.privacy { font-size: 0.82rem; }
+.help.image-size { color: var(--ink); border-left: 3px solid var(--accent); padding-left: 8px; }

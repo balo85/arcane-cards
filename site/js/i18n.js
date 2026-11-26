@@ -86,7 +86,12 @@ export function cardText(lang, overrides = {}) {
     schoolName(schoolKey, raw) {
       return schoolKey ? L[schoolKey] : raw;
     },
+    // Without a level only the school (or free text such as "Armor") is printed.
     typeLine(level, school, ritual) {
+      if (level === null || level === undefined) {
+        const t = school || '';
+        return ritual && L.ritual && t ? `${t} ${L.ritual}` : t;
+      }
       const s = school || L.no_school;
       const vars = { level, ordinal: ordinal(level, lang), school: s, school_lower: s.toLowerCase() };
       const base = fill(level === 0 ? L.cantrip_line : L.level_line, vars);
@@ -98,8 +103,8 @@ export function cardText(lang, overrides = {}) {
 // Field reference shown on the site and used to document templates.
 export const FIELDS = [
   { key: 'name', it: 'nome', required: true, en_desc: 'Spell name.', it_desc: "Nome dell'incantesimo." },
-  { key: 'level', it: 'livello', required: true, en_desc: '0 (cantrip) to 9.', it_desc: 'Da 0 (trucchetto) a 9.' },
-  { key: 'school', it: 'scuola', required: true, en_desc: 'School of magic, English or Italian name.', it_desc: 'Scuola di magia, nome inglese o italiano.' },
+  { key: 'level', it: 'livello', en_desc: '0 (cantrip) to 9. Leave empty for non-spell cards (armour, weapons): only the school text is printed.', it_desc: 'Da 0 (trucchetto) a 9. Lascia vuoto per carte che non sono incantesimi (armature, armi): viene stampato solo il testo della scuola.' },
+  { key: 'school', it: 'scuola', required: true, en_desc: 'School of magic (English or Italian name), or any text such as "Armor" for non-spell cards.', it_desc: 'Scuola di magia (nome inglese o italiano), o un testo qualsiasi come "Armatura" per carte che non sono incantesimi.' },
   { key: 'ritual', it: 'rituale', en_desc: 'true / false (also yes, sì, 1, x).', it_desc: 'true / false (anche sì, si, 1, x).' },
   { key: 'casting_time', it: 'tempo_di_lancio', en_desc: 'e.g. "1 action".', it_desc: 'es. "1 azione".' },
   { key: 'range', it: 'gittata', en_desc: 'e.g. "150 feet".', it_desc: 'es. "45 metri".' },
@@ -128,6 +133,7 @@ export const UI = {
     chooseDeck: '— choose a deck —',
     step2: '2. Artwork (optional)',
     imagesHelp: 'Put an image URL in the "image" field. Images in this repository work with a relative path (images/fireball.svg). You can also pick image files or a .zip of images from your computer and reference them by file name (fireball.jpg).',
+    imageSize: 'Image size: {bestW} × {bestH} px or larger is ideal (landscape, about {ratio}:1). Minimum {minW} × {minH} px for a sharp print at 300 dpi. The art area is {mmW} × {mmH} mm: other shapes are cropped to fill it, and "image_position" picks which part to keep.',
     imagesPrivacy: 'Local images and zip files never leave your computer: they are read by your browser, kept in memory only and discarded when you clear them, reload or close the page.',
     clearImages: 'Clear images',
     zipError: 'Could not read "{name}": {msg}',
@@ -185,6 +191,7 @@ export const UI = {
     chooseDeck: '— scegli un mazzo —',
     step2: '2. Illustrazioni (opzionali)',
     imagesHelp: 'Inserisci l\'URL di un\'immagine nel campo "immagine". Le immagini nel repository funzionano con un percorso relativo (images/fireball.svg). Puoi anche scegliere immagini o un file .zip di immagini dal tuo computer e indicarle per nome (fireball.jpg).',
+    imageSize: 'Dimensione immagini: ideale {bestW} × {bestH} px o più (orizzontale, circa {ratio}:1). Minimo {minW} × {minH} px per una stampa nitida a 300 dpi. L\'area illustrazione è {mmW} × {mmH} mm: le immagini con altre proporzioni vengono ritagliate per riempirla e "posizione_immagine" sceglie quale parte tenere.',
     imagesPrivacy: 'Le immagini locali e i file zip non lasciano mai il tuo computer: li legge il browser, restano solo in memoria e vengono eliminati quando li svuoti, ricarichi o chiudi la pagina.',
     clearImages: 'Svuota immagini',
     zipError: 'Impossibile leggere "{name}": {msg}',

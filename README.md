@@ -24,8 +24,8 @@ Each spell is one JSON object or one CSV row. Column names are accepted in Engli
 | Field | Italian | Notes |
 | --- | --- | --- |
 | `name` | `nome` | Required |
-| `level` | `livello` | 0 (cantrip) to 9 |
-| `school` | `scuola` | English or Italian school name |
+| `level` | `livello` | 0 (cantrip) to 9. Leave empty for non-spell cards (armour, weapons) |
+| `school` | `scuola` | English or Italian school name, or any text ("Heavy Armor") for non-spell cards |
 | `ritual` | `rituale` | `true` / `false` |
 | `casting_time` | `tempo_di_lancio` | |
 | `range` | `gittata` | |
@@ -40,6 +40,8 @@ Each spell is one JSON object or one CSV row. Column names are accepted in Engli
 | `copies` | `copie` | Number of copies, default 1 |
 
 Add `_en` or `_it` to any field (`name_it`, `description_en`) to keep both languages in one file. The language checkbox picks which one is printed, and falls back to the unsuffixed field. See `site/decks/sample-spells.json`.
+
+Empty `casting_time`, `range`, `components` or `duration` are not printed, and the description takes the freed space. The level and school line is printed at the bottom right, opposite the classes.
 
 A file in a single language works too: unsuffixed fields are printed whatever the checkbox says, and the checkbox then only changes the labels and school names.
 
@@ -75,7 +77,10 @@ Each school of magic has a fixed default colour: Abjuration `royalblue`, Conjura
 
 Local images and zip files are never uploaded. GitHub Pages only serves static files, so there is no server to send them to: the browser unpacks them, keeps them in memory, and discards them on **Clear images**, reload or close. A bare file name that is not loaded locally is reported as missing and is never looked up on the network. The generated PDF contains its own copy of each image.
 
-Images are cropped to fill the art box (about 56 × 24 mm, roughly 2.3:1). Use `image_position` to keep the top or bottom of a tall image.
+Images are cropped to fill the art box (55.8 × 24 mm, about 2.3:1, landscape). Use `image_position` to keep the top or bottom of a tall image.
+
+- **Ideal size:** 1340 × 580 px or larger.
+- **Minimum size:** 670 × 288 px, for a sharp print at 300 dpi.
 
 ## Decks in the repository
 

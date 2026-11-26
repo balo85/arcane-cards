@@ -1,7 +1,7 @@
 import { t, FIELDS, cardText } from './i18n.js';
 import { parseSettings, settingsFromObject, mergeSettings, labelOverrides, resolveColors, parseColor, defaultSettingsText } from './labels.js';
 import { parseInput, normalizeSpells, localize } from './data.js';
-import { buildPdf } from './render.js';
+import { buildPdf, ART_SIZE } from './render.js';
 
 const $ = (sel) => document.querySelector(sel);
 const els = {
@@ -82,6 +82,16 @@ function applyUi() {
     els.fields.appendChild(tr);
   }
   showImagesInfo();
+  const num = (n, digits = 1) => n.toLocaleString(l, { maximumFractionDigits: digits });
+  $('#image-size').textContent = t(l, 'imageSize', {
+    bestW: ART_SIZE.bestW,
+    bestH: ART_SIZE.bestH,
+    minW: ART_SIZE.minW,
+    minH: ART_SIZE.minH,
+    mmW: num(ART_SIZE.mmW),
+    mmH: num(ART_SIZE.mmH),
+    ratio: num(ART_SIZE.mmW / ART_SIZE.mmH),
+  });
   if (lastStatus) setStatus(lastStatus.key, lastStatus.params, lastStatus.kind);
   renderWarnings(lastWarnings);
 }

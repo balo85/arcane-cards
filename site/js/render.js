@@ -12,6 +12,17 @@ const PAD = 1.4; // inner padding
 const INNER_W = CARD.w - 2 * FRAME;
 const CONTENT_W = INNER_W - 2 * PAD;
 const ART_H = 24;
+const PX_PER_MM = 12; // ~300 dpi
+
+// Artwork box on the card, in millimetres and in pixels for a sharp print.
+export const ART_SIZE = {
+  mmW: CONTENT_W,
+  mmH: ART_H,
+  minW: Math.round(CONTENT_W * PX_PER_MM),
+  minH: Math.round(ART_H * PX_PER_MM),
+  bestW: Math.ceil((CONTENT_W * PX_PER_MM * 2) / 10) * 10,
+  bestH: Math.ceil((ART_H * PX_PER_MM * 2) / 10) * 10,
+};
 const INK_COLOR = [34, 28, 24];
 
 const mix = (c, t) => c.map((v) => Math.round(v + (255 - v) * t));
@@ -71,9 +82,8 @@ async function loadArt(src, focus, opts) {
   const blob = await getImageBlob(src, opts);
   const { img, url } = await decodeImage(blob);
   try {
-    const pxPerMm = 12; // ~300 dpi
-    const w = Math.round(CONTENT_W * pxPerMm);
-    const h = Math.round(ART_H * pxPerMm);
+    const w = ART_SIZE.minW;
+    const h = ART_SIZE.minH;
     const iw = img.naturalWidth || img.width || w;
     const ih = img.naturalHeight || img.height || h;
     const canvas = document.createElement('canvas');
@@ -322,17 +332,20 @@ function drawCard(doc, card, x, y, art, opts) {
   doc.setDrawColor(...color);
   doc.setLineWidth(0.3);
   doc.roundedRect(cx, cy, CONTENT_W, titleH, 1.2, 1.2, 'FD');
+  const hasLevel = card.level !== null && card.level !== undefined;
   const r = 2.5;
   const bx = cx + CONTENT_W - r - 0.8;
   const by = cy + titleH / 2;
-  doc.setFillColor(...color);
-  doc.circle(bx, by, r, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('times', 'bold');
-  doc.setFontSize(9);
-  doc.text(card.level === 0 ? text.cantrip_badge : String(card.level), bx, by + 0.15, { align: 'center', baseline: 'middle' });
+  if (hasLevel) {
+    doc.setFillColor(...color);
+    doc.circle(bx, by, r, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(9);
+    doc.text(card.level === 0 ? text.cantrip_badge : String(card.level), bx, by + 0.15, { align: 'center', baseline: 'middle' });
+  }
 
-  const name = fitLine(doc, card.name, 'times', 'bold', CONTENT_W - 2 * r - 3.4, 10.5, 6.5);
+  const name = fitLine(doc, card.name, 'times', 'bold', CONTENT_W - (hasLevel ? 2 * r + 3.4 : 3.2), 10.5, 6.5);
   doc.setTextColor(...INK);
   doc.setFont('times', 'bold');
   doc.setFontSize(name.size);
@@ -348,26 +361,20 @@ function drawCard(doc, card, x, y, art, opts) {
     cy += ART_H + 1.1;
   }
 
-  // Type line
-  const typeH = 4.4;
-  doc.setFillColor(...tint);
-  doc.roundedRect(cx, cy, CONTENT_W, typeH, 0.9, 0.9, 'F');
-  const typeText = fitLine(doc, text.typeLine(card.level, text.schoolName(card.schoolKey, card.school), card.ritual), 'times', 'italic', CONTENT_W - 3, 7.5, 5);
-  doc.setTextColor(...INK);
-  doc.setFont('times', 'italic');
-  doc.setFontSize(typeText.size);
-  doc.text(typeText.text, cx + 1.5, cy + typeH / 2 + 0.15, { baseline: 'middle' });
-  cy += typeH + 1.1;
-
-  // Stats grid 2 x 2
+  // Stats grid: only the filled stats, two per row; a lone last stat takes the full width.
   const gap = 0.9;
-  const cellW = (CONTENT_W - gap) / 2;
+  const halfW = (CONTENT_W - gap) / 2;
   const labelH = 2.1;
-  const rows = [
-    [[text.casting_time, card.casting_time], [text.range, card.range]],
-    [[text.components, card.components], [text.duration, card.duration]],
-  ];
+  const stats = [
+    [text.casting_time, card.casting_time],
+    [text.range, card.range],
+    [text.components, card.components],
+    [text.duration, card.duration],
+  ].filter(([, value]) => value);
+  const rows = [];
+  for (let i = 0; i < stats.length; i += 2) rows.push(stats.slice(i, i + 2));
   for (const row of rows) {
+    const cellW = row.length === 1 ? CONTENT_W : halfW;
     const cells = row.map(([label, value]) => ({ label, ...fitStat(doc, value, cellW - 1.8) }));
     const rowH = Math.max(6.2, ...cells.map((c) => labelH + c.lines.length * c.size * PT * 1.15 + 1.3));
     cells.forEach((c, i) => {
@@ -386,15 +393,28 @@ function drawCard(doc, card, x, y, art, opts) {
     cy += rowH + gap;
   }
 
-  // Footer (classes)
+  // Footer: classes on the left, type line (level and school) on the right
   let bottom = iy + ih - PAD;
-  if (card.classes) {
-    doc.setTextColor(...mix(INK, 0.35));
-    doc.setFont('helvetica', 'italic');
-    const cls = fitLine(doc, card.classes, 'helvetica', 'italic', CONTENT_W - 1, 5, 4);
-    doc.setFontSize(cls.size);
-    doc.text(cls.text, cx + 0.5, bottom, { baseline: 'bottom' });
-    bottom -= 2.6;
+  const typeLine = text.typeLine(card.level, text.schoolName(card.schoolKey, card.school), card.ritual);
+  if (card.classes || typeLine) {
+    let typeW = 0;
+    if (typeLine) {
+      const maxW = card.classes ? CONTENT_W * 0.62 : CONTENT_W - 1;
+      const tl = fitLine(doc, typeLine, 'times', 'italic', maxW, 6.5, 4.5);
+      doc.setTextColor(...color);
+      doc.setFont('times', 'italic');
+      doc.setFontSize(tl.size);
+      doc.text(tl.text, cx + CONTENT_W - 0.5, bottom, { baseline: 'bottom', align: 'right' });
+      typeW = doc.getTextWidth(tl.text) + 2;
+    }
+    if (card.classes) {
+      const cls = fitLine(doc, card.classes, 'helvetica', 'italic', CONTENT_W - 1 - typeW, 5, 4);
+      doc.setTextColor(...mix(INK, 0.35));
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(cls.size);
+      doc.text(cls.text, cx + 0.5, bottom, { baseline: 'bottom' });
+    }
+    bottom -= 2.9;
   }
 
   // Description box

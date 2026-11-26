@@ -115,16 +115,17 @@ export function localize(spell, lang) {
   const warnings = [];
   const name = toText(pick(spell, 'name', lang));
 
+  // An empty level means a card that is not a spell (armour, weapon, item): no level is printed.
   const rawLevel = pick(spell, 'level', lang);
-  let level = parseLevel(rawLevel);
-  if (Number.isNaN(level) || level < 0 || level > 9) {
-    if (rawLevel !== undefined) warnings.push({ code: 'w_level', name, detail: toText(rawLevel) });
-    level = Number.isNaN(level) ? 0 : Math.min(9, Math.max(0, level));
+  let level = rawLevel === undefined ? null : parseLevel(rawLevel);
+  if (level !== null && (Number.isNaN(level) || level < 0 || level > 9)) {
+    warnings.push({ code: 'w_level', name, detail: toText(rawLevel) });
+    level = Number.isNaN(level) ? null : Math.min(9, Math.max(0, level));
   }
 
   const rawSchool = toText(pick(spell, 'school', lang));
   const schoolKey = findSchool(rawSchool);
-  if (rawSchool && !schoolKey) warnings.push({ code: 'w_school', name, detail: rawSchool });
+  if (rawSchool && !schoolKey && level !== null) warnings.push({ code: 'w_school', name, detail: rawSchool });
 
   let components = toText(pick(spell, 'components', lang));
   const material = toText(pick(spell, 'material', lang));
